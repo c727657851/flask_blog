@@ -1,0 +1,56 @@
+{% extends 'common/base.html' %}
+{% from 'common/macro.html' import page_show %}
+
+{% block title %}
+    首页
+{% endblock %}
+
+{% block page_content %}
+    {{ wtf.quick_form(form) }}
+    {% for p in posts %}
+        <div class="media">
+            <div class="media-left media-middle">
+                <a href="#">
+                    <img class="media-object" src="{{ url_for('static',filename='uploads/'+p.user.icon) }}" alt="头像" style="width: 64px;height: 64px">
+                </a>
+            </div>
+            <div class="media-body">
+                <div style="float: right">{{ moment(p.timestamp).fromNow() }}</div>
+                <h4 class="media-heading">{{ p.user.username }}</h4>
+                {{ p.content }}
+
+                {% if current_user.is_authenticated %}
+                    <div url="{{ url_for('posts.collect',pid=p.id) }}" style="cursor: pointer" class="collect">
+                        {% if current_user.is_favorite(p.id) %}
+                            取消收藏
+                        {% else %}
+                            收藏
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    {{ page_show(pagination,'main.index') }}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{#    注意导入的顺序 先导入jquery#}
+    <script type="text/javascript">
+        $(function () {   // 整个页面加载完毕再执行这个方法    html事件
+            $('.collect').click(function () {
+                //http://10.211.55.3:5055/collect/1/  get请求
+                _this = this    // 点击谁   谁就是this
+                $.get($(this).attr('url'), function(){
+                       if($(_this).text() == '收藏'){
+                           $(_this).text('取消收藏')
+                       }else {
+                           $(_this).text('收藏')
+                       }
+                });
+            })
+        })
+    </script>
+{% endblock %}
+
